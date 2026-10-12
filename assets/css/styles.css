@@ -1667,3 +1667,6 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* Brand mark beside the shop name */
 .wordmark__mark { flex: none; width: auto; height: 1.45em; margin-block: -0.2em; }
+
+/* Snap cards to the gutter, not the screen edge, so the first letters never touch the edge */
+.filters__scroller, .gift-row, .picks-row { scroll-padding-inline: var(--gutter); }
