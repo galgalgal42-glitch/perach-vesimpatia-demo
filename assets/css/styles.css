@@ -1277,4 +1277,4 @@ ul { margin: 0; padding: 0; list-style: none; }
 .reviews { border-top: 0; background: linear-gradient(var(--line), var(--line)) center top / calc(100% - 2 * var(--gutter)) 1px no-repeat; }
 
 @media (max-width: 480px) { .field--inline select { padding-inline: 12px 34px; background-position: left 12px center; } }
-.occasion a:focus-visible { outline: 1.5px solid var(--sage); outline-offset: -1px; border-radius: 4px; }
+.occasion a:focus-visible { outline: 2px solid var(--sage-ink); outline-offset: -2px; border-radius: 4px; }
