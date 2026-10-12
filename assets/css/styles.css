@@ -214,6 +214,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 .site-header__menu { justify-self: start; margin-inline-start: -10px; }
 .wordmark {
   grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: inherit;
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 1.5rem;
@@ -1660,3 +1664,6 @@ ul { margin: 0; padding: 0; list-style: none; }
 .catalog + .occasions,
 .about + .gifts { padding-block-start: 0; }
 .catalog .demo-note { margin-block-start: 20px; }
+
+/* Brand mark beside the shop name */
+.wordmark__mark { flex: none; width: auto; height: 1.45em; margin-block: -0.2em; }
