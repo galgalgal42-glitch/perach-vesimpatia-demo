@@ -247,7 +247,7 @@
     const grid = $('[data-grid]');
     if (!grid) return;
     const featuredOnly = grid.hasAttribute('data-featured');
-    const list = featuredOnly ? ordered(PRODUCTS.filter((p) => p.featured)) : ordered(PRODUCTS.filter(matches));
+    const list = featuredOnly ? ordered(PRODUCTS.filter((p) => p.featured && !p.pick)) : ordered(PRODUCTS.filter(matches));
     grid.innerHTML = list.length
       ? list.map(cardHTML).join('')
       : `<li class="product-grid__empty"><p>לא מצאנו זר שמתאים לכל הסינונים יחד.</p><p>אפשר <button type="button" data-clear-filter>לנקות את הסינון</button> או <a href="index.html#personal">לספר לנו מה אתם מחפשים</a>, והשוזר ירכיב זר בשבילכם.</p></li>`;
@@ -1004,108 +1004,38 @@
     render();
   }
 
-  /* ---------- Recommended: three layouts (the home page uses one; sketches.html shows all) ---------- */
+  /* ---------- Recommended: one lead pick, then four more. Picks never repeat in the home catalog. ---------- */
 
   const sparkle = '<svg class="icon icon--sm" aria-hidden="true"><use href="#i-sparkle"/></svg>';
+  const pickLabel = (p) => `${esc(p.name)}, החל מ־${price(p.prices[0])}. לפרטים ולהזמנה`;
 
-  function picksEditorial(list) {
-    const [lead, ...rest] = list;
-    return `
-      <div class="picks-ed">
-        <button type="button" class="pick-lead" data-product="${lead.id}" aria-label="${esc(lead.name)}, החל מ־${price(lead.prices[0])}. לפרטים ולהזמנה">
-          <span class="pick-lead__media"><img src="${lead.img}" alt="" loading="lazy" width="600" height="630"></span>
-          <span class="pick-lead__body">
-            <span class="pick-badge">${sparkle}הבחירה של השבוע</span>
-            <span class="pick-lead__name">${esc(lead.name)}</span>
-            <span class="pick-lead__note">${esc(lead.note)}</span>
-            <span class="pick-lead__flowers">${esc(lead.flowers)}</span>
-            <span class="pick-lead__foot"><span class="pick-lead__price">החל מ־${price(lead.prices[0])}</span><span class="pick-lead__cta">לפרטים ולהזמנה <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg></span></span>
-          </span>
-        </button>
-        <ul class="pick-rows">
-          ${rest.map((p) => `
-          <li>
-            <button type="button" class="pick-row" data-product="${p.id}" aria-label="${esc(p.name)}, החל מ־${price(p.prices[0])}. לפרטים ולהזמנה">
-              <img src="${p.img}" alt="" loading="lazy" width="600" height="630">
-              <span class="pick-row__text">
-                <span class="pick-row__name">${esc(p.name)}</span>
-                <span class="pick-row__note">${esc(p.note)}</span>
-                <span class="pick-row__price">החל מ־${price(p.prices[0])}</span>
-              </span>
-              <svg class="icon pick-row__arrow" aria-hidden="true"><use href="#i-arrow-left"/></svg>
-            </button>
-          </li>`).join('')}
-        </ul>
-      </div>`;
-  }
-
-  function picksRow(list) {
-    return `
+  function renderPicks() {
+    const root = $('[data-picks]');
+    if (!root) return;
+    const [lead, ...rest] = picksList();
+    root.innerHTML = `
+      <button type="button" class="pick-lead" data-product="${lead.id}" aria-label="${pickLabel(lead)}">
+        <span class="pick-lead__media"><img src="${lead.img}" alt="" loading="lazy" width="600" height="630"></span>
+        <span class="pick-lead__body">
+          <span class="pick-badge">${sparkle}הבחירה של השבוע</span>
+          <span class="pick-lead__name">${esc(lead.name)}</span>
+          <span class="pick-lead__note">${esc(lead.note)}</span>
+          <span class="pick-lead__flowers">${esc(lead.flowers)}</span>
+          <span class="pick-lead__foot"><span class="pick-lead__price">החל מ־${price(lead.prices[0])}</span><span class="pick-lead__cta">לפרטים ולהזמנה <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg></span></span>
+        </span>
+      </button>
+      <h3 class="picks__more">ועוד ארבעה שאנחנו ממליצים עליהם</h3>
       <ul class="picks-row">
-        ${list.map((p, i) => `
-        <li class="picks-row__item" style="--i:${i}">
-          <button type="button" class="pick-card" data-product="${p.id}" aria-label="${esc(p.name)}, החל מ־${price(p.prices[0])}. לפרטים ולהזמנה">
-            <span class="pick-card__media">
-              <img src="${p.img}" alt="" loading="lazy" width="600" height="630">
-              <span class="pick-card__num" aria-hidden="true">0${i + 1}</span>
-            </span>
+        ${rest.map((p) => `
+        <li class="picks-row__item">
+          <button type="button" class="pick-card" data-product="${p.id}" aria-label="${pickLabel(p)}">
+            <span class="pick-card__media"><img src="${p.img}" alt="" loading="lazy" width="600" height="630"></span>
             <span class="pick-card__name">${esc(p.name)}</span>
             <span class="pick-card__note">${esc(p.note)}</span>
             <span class="pick-card__price">החל מ־${price(p.prices[0])}</span>
           </button>
         </li>`).join('')}
       </ul>`;
-  }
-
-  const TABS = [
-    { id: 'picks', label: 'מומלצים', test: (p) => p.pick },
-    { id: 'low', label: 'עד ₪200', test: (p) => p.prices[0] <= 200 && !p.quiet },
-    { id: 'shabbat', label: 'לשבת ולחג', test: (p) => p.occasions.includes('shabbat') || p.colors.includes('white') && !p.quiet },
-    { id: 'plants', label: 'עציצים', test: (p) => p.occasions.includes('plants') }
-  ];
-
-  function picksTabs(root) {
-    const draw = (id) => {
-      const tab = TABS.find((x) => x.id === id);
-      $('[data-tab-grid]', root).innerHTML = ordered(PRODUCTS.filter(tab.test)).slice(0, 5).map(cardHTML).join('');
-      $$('[role="tab"]', root).forEach((b) => {
-        const on = b.dataset.tab === id;
-        b.setAttribute('aria-selected', String(on));
-        b.tabIndex = on ? 0 : -1;
-      });
-    };
-    root.innerHTML = `
-      <div class="picks-tabs">
-        <div class="picks-tabs__bar" role="tablist" aria-label="בחירה מהירה">
-          ${TABS.map((x) => `<button type="button" role="tab" class="picks-tabs__tab" data-tab="${x.id}">${x.id === 'picks' ? sparkle : ''}${x.label}</button>`).join('')}
-        </div>
-        <div role="tabpanel"><ul class="product-grid" data-tab-grid></ul></div>
-      </div>`;
-    const bar = $('[role="tablist"]', root);
-    bar.addEventListener('click', (e) => {
-      const b = e.target.closest('[role="tab"]');
-      if (!b) return;
-      const run = () => draw(b.dataset.tab);
-      if (document.startViewTransition && !reduceMotion) document.startViewTransition(run); else run();
-    });
-    bar.addEventListener('keydown', (e) => {
-      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-      const tabs = $$('[role="tab"]', bar);
-      const i = tabs.indexOf(document.activeElement);
-      const next = tabs[(i + (e.key === 'ArrowLeft' ? 1 : -1) + tabs.length) % tabs.length];
-      next.focus(); next.click();
-    });
-    draw('picks');
-  }
-
-  function renderPicks() {
-    const list = picksList();
-    $$('[data-picks]').forEach((root) => {
-      const kind = root.dataset.picks;
-      if (kind === 'editorial') root.innerHTML = picksEditorial(list);
-      else if (kind === 'row') root.innerHTML = picksRow(list);
-      else if (kind === 'tabs') picksTabs(root);
-    });
   }
 
   /* ---------- Small wiring ---------- */
@@ -1142,8 +1072,8 @@
       entries.forEach((en) => {
         if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
       });
-    }, { rootMargin: '0px 0px -8% 0px' });
-    $$('.section-head, .picks-ed, .picks-row, .picks-tabs, .personal__media, .personal__body, .occasion-list, .about__media, .about__body, .reviews, .gift-row, .shop__main, .shop__delivery, .faq__inner')
+    }, { rootMargin: '0px 0px -4% 0px' });
+    $$('.section-head, .pick-lead, .picks-row, .personal__media, .personal__body, .occasion-list, .about__media, .about__body, .reviews, .gift-row, .shop__main, .shop__delivery, .faq__inner')
       .forEach((el) => { el.setAttribute('data-reveal', ''); io.observe(el); });
   }
 
