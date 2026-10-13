@@ -177,7 +177,7 @@
         html = towns.map((t) => option('s', t, esc(t))).join('');
         if (!towns.length) html = `<li class="town-picker__empty" role="presentation">אין לנו משלוח קבוע ליישוב הזה</li>`;
         if (!q || 'איסוף עצמי'.startsWith(q)) html += option('p', 'איסוף עצמי', 'איסוף עצמי מהחנות, החלוצים 4', ' town-picker__opt--sep');
-        html += option('o', '', `יישוב אחר${q && !towns.length ? `: חיפוש "${esc(input.value.trim())}" בכל היישובים` : ', חיפוש בכל היישובים בישראל'}`, ' town-picker__opt--other');
+        html += option('o', '', 'יישוב אחר, חיפוש בכל היישובים בישראל', ' town-picker__opt--other');
       } else {
         shopKeys = shopKeys || new Set(SHOP.towns.map(townKey));
         const pool = (window.IL_TOWNS || []).filter((t) => !shopKeys.has(townKey(t)));
@@ -243,10 +243,9 @@
       if (!li) return;
       const kind = li.dataset.kind;
       if (kind === 'o') {
-        const carry = input.value;
+        // Start the all-Israel search empty: what was typed didn't match a shop town.
+        input.value = '';
         setMode(true);
-        input.value = carry;
-        render();
         return;
       }
       set(kind, li.dataset.town);
