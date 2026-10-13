@@ -1670,3 +1670,87 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* Snap cards to the gutter, not the screen edge, so the first letters never touch the edge */
 .filters__scroller, .gift-row, .picks-row { scroll-padding-inline: var(--gutter); }
+
+/* ---------- Town picker: search on top, the shop's towns, then any town in Israel ---------- */
+
+.town-picker { position: relative; min-width: 0; }
+.town-picker__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 1rem;
+  text-align: start;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.town-picker__toggle.is-empty .town-picker__value { color: var(--ink-3); }
+.town-picker__toggle[aria-expanded="true"],
+.town-picker__toggle:focus-visible { outline: none; border-color: var(--sage-ink); box-shadow: 0 0 0 3px var(--sage-wash); }
+.town-picker__toggle.is-invalid { border-color: #9a2b2b; box-shadow: 0 0 0 3px rgb(154 43 43 / 0.12); }
+.town-picker__toggle .icon { flex: none; transition: transform 200ms var(--ease-out); }
+.town-picker__toggle[aria-expanded="true"] .icon { transform: rotate(180deg); }
+.town-picker__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.town-picker__panel {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+}
+.town-picker__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-3);
+}
+.town-picker__search input,
+.field .town-picker__search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.town-picker__search input:focus { outline: none; box-shadow: none; }
+.town-picker__mode { display: grid; gap: 6px; padding: 10px 14px; background: var(--sage-wash); font-size: 0.8125rem; color: var(--ink-2); }
+.town-picker__back { display: inline-flex; align-items: center; gap: 6px; width: fit-content; font-weight: 600; color: var(--sage-ink); font-size: 0.875rem; }
+.town-picker__list { max-height: 248px; overflow-y: auto; overscroll-behavior: contain; padding-block: 4px; }
+.town-picker__opt { padding: 10px 14px; cursor: pointer; font-size: 0.9375rem; }
+.town-picker__opt.is-active { background: var(--sage-wash); }
+.town-picker__opt--sep { margin-block-start: 4px; border-top: 1px solid var(--line); padding-block-start: 12px; color: var(--ink-2); }
+.town-picker__opt--other { font-weight: 600; color: var(--sage-ink); }
+.town-picker__empty { padding: 10px 14px; color: var(--ink-3); font-size: 0.875rem; }
+.town-picker__note { margin-block-start: 8px; padding: 8px 12px; border-radius: var(--radius); background: var(--sage-wash); color: var(--ink-2); font-size: 0.8125rem; line-height: 1.45; }
+
+/* ---------- Bag checkout: delivery details asked once, before WhatsApp ---------- */
+
+.checkout { display: grid; gap: 14px; margin: 8px 0 0; padding: 0; border: 0; min-width: 0; }
+/* In the bag the list opens in place and pushes the button down, so it never runs off the screen. */
+.checkout .town-picker__panel { position: static; margin-block-start: 6px; box-shadow: none; }
+@media (max-width: 599px) {
+  .town-picker__panel { position: static; margin-block-start: 6px; box-shadow: none; }
+}
+.checkout__title { padding: 0; margin-block-end: 2px; font-family: var(--font-display); font-size: 1.125rem; }
+.checkout .field label { margin-block-end: 8px; }
+.checkout__error { margin-block-start: 6px; color: #9a2b2b; font-size: 0.8125rem; }
+
+.mega__towns a { color: var(--sage-ink); font-weight: 600; text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .mega__towns a:hover { text-decoration: underline; } }

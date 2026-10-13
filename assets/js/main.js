@@ -113,11 +113,171 @@
 
   function fillSelects() {
     $$('[data-date-select]').forEach((s) => { s.innerHTML = dateOptions(); });
-    const towns = SHOP.towns.map((t) => `<option value="משלוח ל${t}">משלוח ל${t}</option>`).join('');
-    $$('[data-town-select]').forEach((s) => {
-      s.innerHTML = `${towns}<option value="משלוח ליישוב אחר בסביבה, נתאם בשיחה">יישוב אחר בסביבה</option><option value="איסוף עצמי מהחנות">איסוף עצמי מהחנות</option>`;
+    $$('[data-towns]').forEach((list) => {
+      const short = list.hasAttribute('data-towns-short');
+      const shown = short ? SHOP.towns.slice(0, 7) : SHOP.towns;
+      list.innerHTML = shown.map((t) => `<li>${t}</li>`).join('')
+        + (short ? `<li><a href="index.html#shop">ועוד ${SHOP.towns.length - shown.length} יישובים</a></li>` : '');
     });
-    $$('[data-towns]').forEach((list) => { list.innerHTML = SHOP.towns.map((t) => `<li>${t}</li>`).join(''); });
+    $$('[data-town-picker]').forEach((el) => townPicker(el));
+  }
+
+  /* ---------- Town picker: search on top, the shop's towns, then any town in Israel ---------- */
+
+  const OUTSIDE_NOTE = 'יישוב מחוץ לאזור המשלוח הקבוע: המשלוח כפוף לאישור החנות, ועלות המשלוח עשויה להשתנות.';
+  const townKey = (s) => norm(s).replace(/\s+/g, ' ').trim();
+  let shopKeys = null; // built on first use: norm() is defined further down
+  let pickerSeq = 0;
+
+  // value: what goes into the WhatsApp message. Empty until the customer chooses.
+  function townPicker(root, initial) {
+    if (root.dataset.ready) return root.townPicker;
+    root.dataset.ready = '1';
+    const uid = `tp${pickerSeq += 1}`;
+    const toggleId = root.dataset.id || `${uid}-toggle`;
+    root.classList.add('town-picker');
+    root.innerHTML = `
+      <input type="hidden" name="${root.dataset.name || 'where'}" value="">
+      <button type="button" class="town-picker__toggle" id="${toggleId}" aria-haspopup="listbox" aria-expanded="false" aria-controls="${uid}-panel">
+        <span class="town-picker__value" data-tp-label>בחרו יישוב</span>
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-caret-down"/></svg>
+      </button>
+      <div class="town-picker__panel" id="${uid}-panel" hidden>
+        <div class="town-picker__search">
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+          <input type="text" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="${uid}-list" aria-label="חיפוש יישוב" placeholder="חיפוש יישוב" autocomplete="off" enterkeyhint="search" data-tp-input>
+        </div>
+        <div class="town-picker__mode" data-tp-mode hidden>
+          <button type="button" class="town-picker__back" data-tp-back><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg> חזרה ליישובים שאנחנו שולחים אליהם</button>
+          <p>${OUTSIDE_NOTE}</p>
+        </div>
+        <ul class="town-picker__list" role="listbox" id="${uid}-list" aria-label="יישובים" data-tp-list></ul>
+      </div>
+      <p class="town-picker__note" data-tp-note hidden>${OUTSIDE_NOTE}</p>`;
+    const hidden = $('input[type="hidden"]', root);
+    const toggle = $('.town-picker__toggle', root);
+    const panel = $('.town-picker__panel', root);
+    const input = $('[data-tp-input]', root);
+    const list = $('[data-tp-list]', root);
+    const mode = $('[data-tp-mode]', root);
+    const note = $('[data-tp-note]', root);
+    const label = $('[data-tp-label]', root);
+    let all = false;
+    let active = -1;
+
+    const option = (kind, town, text, extra = '') =>
+      `<li role="option" class="town-picker__opt${extra}" id="${uid}-o${kind}${encodeURIComponent(town).replace(/%/g, '')}" data-kind="${kind}" data-town="${esc(town)}">${text}</li>`;
+
+    function render() {
+      const q = townKey(input.value);
+      const starts = (t) => !q || townKey(t).startsWith(q);
+      let html = '';
+      if (!all) {
+        const towns = SHOP.towns.filter(starts);
+        html = towns.map((t) => option('s', t, esc(t))).join('');
+        if (!towns.length) html = `<li class="town-picker__empty" role="presentation">אין לנו משלוח קבוע ליישוב הזה</li>`;
+        if (!q || 'איסוף עצמי'.startsWith(q)) html += option('p', 'איסוף עצמי', 'איסוף עצמי מהחנות, החלוצים 4', ' town-picker__opt--sep');
+        html += option('o', '', `יישוב אחר${q && !towns.length ? `: חיפוש "${esc(input.value.trim())}" בכל היישובים` : ', חיפוש בכל היישובים בישראל'}`, ' town-picker__opt--other');
+      } else {
+        shopKeys = shopKeys || new Set(SHOP.towns.map(townKey));
+        const pool = (window.IL_TOWNS || []).filter((t) => !shopKeys.has(townKey(t)));
+        const found = pool.filter(starts);
+        html = found.slice(0, 80).map((t) => option('a', t, esc(t))).join('');
+        if (!found.length) html = `<li class="town-picker__empty" role="presentation">לא מצאנו יישוב בשם הזה</li>`;
+        else if (found.length > 80) html += `<li class="town-picker__empty" role="presentation">המשיכו להקליד כדי לצמצם את הרשימה</li>`;
+      }
+      list.innerHTML = html;
+      setActive($$('[role="option"]', list).length ? 0 : -1);
+    }
+
+    function setActive(i) {
+      const opts = $$('[role="option"]', list);
+      opts.forEach((o, n) => o.classList.toggle('is-active', n === i));
+      active = i;
+      if (opts[i]) {
+        input.setAttribute('aria-activedescendant', opts[i].id);
+        opts[i].scrollIntoView({ block: 'nearest' });
+      } else input.removeAttribute('aria-activedescendant');
+    }
+
+    function setMode(next) {
+      all = next;
+      mode.hidden = !all;
+      input.placeholder = all ? 'הקלידו שם של יישוב בישראל' : 'חיפוש יישוב';
+      render();
+      input.focus();
+    }
+
+    function open() {
+      if (!panel.hidden) return;
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      input.value = '';
+      setMode(false);
+      panel.scrollIntoView({ block: 'nearest' });
+    }
+
+    function close(focusToggle) {
+      if (panel.hidden) return;
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      if (focusToggle) toggle.focus();
+    }
+
+    function set(kind, town, silent) {
+      let value = '';
+      if (kind === 's') value = `משלוח ל${town}`;
+      else if (kind === 'p') value = 'איסוף עצמי מהחנות';
+      else if (kind === 'a') value = `משלוח ל${town} (יישוב מחוץ לאזור המשלוח הקבוע, בכפוף לאישורכם)`;
+      hidden.value = value;
+      hidden.dataset.kind = kind || '';
+      hidden.dataset.town = town || '';
+      label.textContent = kind === 'p' ? 'איסוף עצמי מהחנות' : town || 'בחרו יישוב';
+      toggle.classList.toggle('is-empty', !value);
+      toggle.classList.remove('is-invalid');
+      note.hidden = kind !== 'a';
+      if (!silent) hidden.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function choose(li) {
+      if (!li) return;
+      const kind = li.dataset.kind;
+      if (kind === 'o') {
+        const carry = input.value;
+        setMode(true);
+        input.value = carry;
+        render();
+        return;
+      }
+      set(kind, li.dataset.town);
+      close(true);
+    }
+
+    toggle.addEventListener('click', () => (panel.hidden ? open() : close(true)));
+    input.addEventListener('input', render);
+    $('[data-tp-back]', root).addEventListener('click', () => { input.value = ''; setMode(false); });
+    list.addEventListener('mousedown', (e) => e.preventDefault());
+    list.addEventListener('click', (e) => choose(e.target.closest('[role="option"]')));
+    input.addEventListener('keydown', (e) => {
+      const count = $$('[role="option"]', list).length;
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(count - 1, active + 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(0, active - 1)); }
+      else if (e.key === 'Enter') { e.preventDefault(); choose($$('[role="option"]', list)[active]); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (all) { input.value = ''; setMode(false); } else close(true); }
+      else if (e.key === 'Tab') close(false);
+    });
+    // composedPath still holds options that a re-render already removed from the list.
+    document.addEventListener('click', (e) => { if (document.contains(root) && !e.composedPath().includes(root)) close(false); });
+
+    root.townPicker = {
+      get value() { return hidden.value; },
+      get state() { return { kind: hidden.dataset.kind || '', town: hidden.dataset.town || '' }; },
+      set,
+      invalid() { toggle.classList.add('is-invalid'); toggle.focus(); }
+    };
+    if (initial && initial.kind) set(initial.kind, initial.town, true);
+    else toggle.classList.add('is-empty');
+    return root.townPicker;
   }
 
   function wireWhatsAppLinks() {
@@ -168,6 +328,19 @@
     p.pick ? 'מומלץ מומלצים' : ''
   ].join(' '));
   const SEARCH_INDEX = new Map(PRODUCTS.map((p) => [p.id, indexOf(p)]));
+  // What a bouquet is "about": its name, its lead flower, its occasions and colour family.
+  // A bouquet that only has a few of the searched flower tucked inside ranks below these.
+  const strongOf = (p) => norm([
+    p.name, p.flowers.split(',')[0],
+    ...p.occasions.map((id) => (OCCASIONS.find((o) => o.id === id) || {}).label || ''),
+    ...p.colors.map((c) => COLOR_WORDS[c] || ''),
+    p.occasions.includes('plants') ? 'עציץ עציצים צמח' : ''
+  ].join(' '));
+  const STRONG_INDEX = new Map(PRODUCTS.map((p) => [p.id, strongOf(p)]));
+  const hits = (hay, w) => hay.includes(w) || (w.length > 3 && /^[והבלמש]/.test(w) && hay.includes(w.slice(1)));
+  // Strong matches count only at the start of a word, so "ורד" (from ורדים) doesn't hit "בורדו".
+  const startsWord = (hay, w) => ` ${hay}`.includes(` ${w}`)
+    || (w.length > 3 && /^[והבלמש]/.test(w) && ` ${hay}`.includes(` ${w.slice(1)}`));
   const STOP = new Set(['עד', 'של', 'עם', 'או', 'זר', 'זרי', 'זרים', 'פרחים', 'פרחי', 'ל', 'ב']);
 
   function searchProducts(query) {
@@ -176,11 +349,13 @@
     const words = raw.filter((w) => !STOP.has(w) && !/^\d+$/.test(w) && w !== '₪')
       .map((w) => (w.length >= 5 && /(ימ|ות)$/.test(w) ? w.slice(0, -2) : w));
     if (!words.length && !max) return [];
-    return ordered(PRODUCTS.filter((p) => {
+    const found = PRODUCTS.filter((p) => {
       if (max && p.prices[0] > Number(max)) return false;
-      const hay = SEARCH_INDEX.get(p.id);
-      return words.every((w) => hay.includes(w) || (w.length > 3 && /^[והבלמש]/.test(w) && hay.includes(w.slice(1))));
-    }));
+      return words.every((w) => hits(SEARCH_INDEX.get(p.id), w));
+    });
+    if (!words.length) return ordered(found);
+    const strong = found.filter((p) => words.some((w) => startsWord(STRONG_INDEX.get(p.id), w)));
+    return ordered(strong.length ? strong : found);
   }
 
   function readQuery() {
@@ -693,7 +868,6 @@
     const parts = [`${p.name}, ${item.size} (${price(item.price)})${item.qty > 1 ? `, כמות: ${item.qty}` : ''}`];
     const extras = addonsFor(item.addons);
     if (extras.length) parts.push(`תוספות: ${extras.map((a) => `${a.name} (${price(a.price)})`).join(', ')}`);
-    parts.push(item.when.startsWith('מועד') ? item.when : `מועד: ${item.when}`, item.where);
     if (item.note) parts.push(`ברכה לכרטיס: "${item.note}"`);
     return parts.join('\n   ');
   }
@@ -703,7 +877,11 @@
     return off ? `קוד קופון: ${COUPON.code} (${COUPON.percent}% בהזמנה ראשונה מהאתר), הנחה של ${price(off)}.` : '';
   };
 
-  function bagMessage() {
+  // Delivery details are asked once, at checkout in the bag, not for every bouquet.
+  const checkout = store.get('pv-checkout', { when: '', kind: '', town: '' });
+  const saveCheckout = () => store.set('pv-checkout', checkout);
+
+  function bagMessage(where) {
     const subtotal = bag.reduce((s, i) => s + unitPrice(i) * i.qty, 0);
     const off = discountFor(subtotal);
     return [
@@ -711,6 +889,8 @@
       ...bag.map((i, n) => `${n + 1}. ${itemLine(i)}`),
       couponLine(subtotal),
       `סה"כ לפי האתר: ${price(subtotal - off)}${off ? ' אחרי ההנחה' : ''}, לפני משלוח.`,
+      checkout.when ? (checkout.when.startsWith('מועד') ? checkout.when : `מועד: ${checkout.when}`) : '',
+      where || '',
       'אשמח לאישור ולתיאום התשלום. תודה!'
     ].filter(Boolean).join('\n');
   }
@@ -757,7 +937,7 @@
             <img src="${p.img}" alt="" width="600" height="630">
             <div class="bag-item__body">
               <p class="bag-item__name">${esc(p.name)}</p>
-              <p class="bag-item__meta">${esc(item.size)}, ${esc(item.when)}<br>${esc(item.where)}</p>
+              <p class="bag-item__meta">${esc(item.size)}</p>
               ${extras.length ? `<p class="bag-item__meta">+ ${extras.map((a) => a.name).join(', ')}</p>` : ''}
               ${item.note ? `<p class="bag-item__note">"${esc(item.note)}"</p>` : ''}
               <div class="bag-item__row">
@@ -779,15 +959,50 @@
         ${couponHTML(total)}
         ${off ? `<p class="bag__sub"><span>לפני ההנחה</span><s>${price(total)}</s></p>` : ''}
         <p class="bag__total"><span>סה"כ</span><strong>${price(total - off)}</strong></p>
+        <fieldset class="checkout">
+          <legend class="checkout__title">פרטי המשלוח</legend>
+          <div class="field">
+            <label for="bag-when">מתי?</label>
+            <select id="bag-when" data-bag-when>${dateOptions()}</select>
+          </div>
+          <div class="field">
+            <label for="bag-where">לאן?</label>
+            <div data-town-picker data-id="bag-where" data-bag-where></div>
+            <p class="checkout__error" data-bag-where-error role="alert" hidden>בחרו לאן לשלוח, או איסוף עצמי מהחנות.</p>
+          </div>
+        </fieldset>
         <p class="bag__fine">לפני דמי משלוח. אין תשלום באתר: ההזמנה נשלחת אלינו בוואטסאפ, ואנחנו חוזרים אליכם לאישור ולתיאום התשלום.</p>
-        <a class="btn btn--primary btn--block" href="${waUrl(bagMessage())}" target="_blank" rel="noopener">
+        <button class="btn btn--primary btn--block" type="button" data-bag-send>
           <svg class="icon" aria-hidden="true"><use href="#i-whatsapp-logo"/></svg>
           שליחת ההזמנה בוואטסאפ
-        </a>
+        </button>
       </div>`;
+    const when = $('[data-bag-when]', root);
+    if (checkout.when && [...when.options].some((o) => o.value === checkout.when)) when.value = checkout.when;
+    checkout.when = when.value;
+    townPicker($('[data-bag-where]', root), checkout);
   }
 
   function wireBag() {
+    $('[data-bag]').addEventListener('change', (e) => {
+      if (e.target.matches('[data-bag-when]')) { checkout.when = e.target.value; saveCheckout(); }
+      const picker = e.target.closest('[data-bag-where]');
+      if (picker) {
+        Object.assign(checkout, picker.townPicker.state);
+        saveCheckout();
+        $('[data-bag-where-error]').hidden = true;
+      }
+    });
+    $('[data-bag]').addEventListener('click', (e) => {
+      if (!e.target.closest('[data-bag-send]')) return;
+      const picker = $('[data-bag-where]').townPicker;
+      if (!picker.value) {
+        $('[data-bag-where-error]').hidden = false;
+        picker.invalid();
+        return;
+      }
+      window.open(waUrl(bagMessage(picker.value)), '_blank', 'noopener');
+    });
     $('[data-bag]').addEventListener('submit', (e) => {
       const form = e.target.closest('[data-coupon-form]');
       if (!form) return;
@@ -831,8 +1046,6 @@
       size: sizeLabel(qvProduct, sizeIdx),
       price: qvProduct.prices[sizeIdx],
       addons: $$('input[name="addon"]:checked', form).map((i) => i.value),
-      when: form.when.value,
-      where: form.where.value,
       note: form.note.value.trim(),
       qty: 1
     };
@@ -898,7 +1111,7 @@
     $('[data-qv-form]', qv).addEventListener('submit', (e) => {
       e.preventDefault();
       const item = qvItem();
-      const key = (i) => [i.id, i.size, i.note, i.when, i.where, (i.addons || []).join()].join('|');
+      const key = (i) => [i.id, i.size, i.note, (i.addons || []).join()].join('|');
       const same = bag.find((b) => key(b) === key(item));
       if (same) same.qty += 1; else bag.push(item);
       saveBag();
@@ -909,7 +1122,7 @@
     $('[data-qv-wa]', qv).addEventListener('click', () => {
       const item = qvItem();
       const extra = couponLine(unitPrice(item));
-      const text = `שלום, אשמח להזמין מהאתר:\n${itemLine(item)}${extra ? `\n${extra}` : ''}\nאשמח לאישור ולתיאום התשלום. תודה!`;
+      const text = `שלום, אשמח להזמין מהאתר:\n${itemLine(item)}${extra ? `\n${extra}` : ''}\nאת המועד והמשלוח נתאם בשיחה.\nאשמח לאישור ולתיאום התשלום. תודה!`;
       window.open(waUrl(text), '_blank', 'noopener');
     });
   }
@@ -944,7 +1157,7 @@
       lines.push(`${ask}.`);
       if (d.colors.length) lines.push(`צבעים: ${d.colors.join(', ')}.`);
       if (d.size) lines.push(`גודל: ${d.size}.`);
-      lines.push(`${d.when.startsWith('מועד') ? d.when : `מועד: ${d.when}`}. ${d.where}.`);
+      lines.push(`${d.when.startsWith('מועד') ? d.when : `מועד: ${d.when}`}. ${d.where || 'את מקום המשלוח נתאם בשיחה'}.`);
       if (d.note) lines.push(`ברכה לכרטיס: "${d.note}"`);
       lines.push('אשמח שתחזרו אליי עם הצעה ומחיר. תודה!');
       return lines;

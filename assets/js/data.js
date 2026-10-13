@@ -21,7 +21,14 @@ window.SHOP = {
     ['08:00', '16:00'],
     null
   ],
-  towns: ['זכרון יעקב', 'בנימינה־גבעת עדה', 'פרדס חנה־כרכור', 'קיסריה', 'אור עקיבא', 'עתלית'],
+  // Delivery towns as listed on the shop's own Zerli store page (checked 2026-10-13).
+  towns: [
+    'זכרון יעקב', 'אור עקיבא', 'בית אורן', 'בית חנניה', 'בנימינה־גבעת עדה', 'גבע כרמל',
+    'דור', 'הבונים', 'החותרים', 'חדרה', 'כפר גלים', 'כרם מהר״ל',
+    'מאיר שפיה', 'מגדים', 'מעגן מיכאל', 'נווה ים', 'נחשולים', 'ניר עציון',
+    'עופר', 'עין איילה', 'עין הוד', 'עין כרמל', 'עתלית', 'פרדס חנה־כרכור',
+    'צרופה', 'קיסריה', 'שדות ים'
+  ],
   rating: { score: '5.0', count: 41, source: 'B144', checked: 'אוקטובר 2026' }
 };
 
@@ -87,6 +94,33 @@ window.PRODUCTS = [
     img: 'assets/img/card5.jpg',
     occasions: ['love'], colors: ['red'],
     prices: [240, 300, 390]
+  },
+  {
+    id: 'roses-white',
+    name: 'ורדים לבנים',
+    flowers: 'ורדי גן לבנים ושנהב, אקליפטוס וירק',
+    desc: 'ורדי גן לבנים ומלאים עם אקליפטוס, עטופים בנייר שנהב. נקי, אלגנטי ומתאים כמעט לכל רגע.',
+    img: 'assets/img/roses-white.jpg',
+    occasions: ['love', 'thanks', 'wedding', 'shabbat'], colors: ['white'],
+    prices: [230, 290, 370]
+  },
+  {
+    id: 'roses-pink',
+    name: 'ורדים ורודים',
+    flowers: 'ורדי גן בוורוד פודרה ובוורוד עתיק, ורדי ענף וירק עדין',
+    desc: 'שפע של ורדי גן בגווני ורוד רך, עם ורדי ענף קטנים וירק אוורירי. זר רומנטי ועדין.',
+    img: 'assets/img/roses-pink.jpg',
+    occasions: ['love', 'birthday', 'baby'], colors: ['pastel'],
+    prices: [220, 280, 350]
+  },
+  {
+    id: 'roses-coral',
+    name: 'ורדים באלמוג ואפרסק',
+    flowers: 'ורדים בגווני אלמוג, אפרסק וכתום, ורדים בשמנת ואקליפטוס',
+    desc: 'ורדים בגוונים חמים של אלמוג ואפרסק, עם ורדים בצבע שמנת. זר שמח ליום הולדת או לתודה.',
+    img: 'assets/img/roses-coral.jpg',
+    occasions: ['birthday', 'thanks'], colors: ['warm'],
+    prices: [220, 280, 350]
   },
   {
     id: 'morning', featured: true,
