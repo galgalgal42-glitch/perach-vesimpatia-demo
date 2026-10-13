@@ -71,7 +71,7 @@ window.PRODUCTS = [
   {
     id: 'peach', featured: true,
     name: 'אפרסק וחמאה',
-    flowers: 'נוריות אפרסק ושמנת, ורדים לבנים וגיפסנית',
+    flowers: 'נוריות באפרסק, בשמנת ובוורוד, וגיפסנית',
     desc: 'זר עגול ורך בגווני אפרסק ושמנת, קשור ביד בחוט פשתן. מתאים כמעט לכל הזדמנות.',
     img: 'assets/img/card1.jpg',
     occasions: ['love', 'birthday', 'thanks'], colors: ['pastel', 'warm'],
@@ -80,7 +80,7 @@ window.PRODUCTS = [
   {
     id: 'shabbat', featured: true,
     name: 'לבן של שבת',
-    flowers: 'ליזיאנטוס, ורדים לבנים והורטנזיה ירוקה',
+    flowers: 'ליזיאנטוס לבן, ורדים לבנים, הורטנזיה ירוקה ומתיולה לבנה',
     desc: 'סידור לבן וירוק באגרטל זכוכית, מוכן לשולחן השבת.',
     img: 'assets/img/card2.jpg',
     occasions: ['shabbat', 'thanks'], colors: ['white'],
@@ -98,8 +98,8 @@ window.PRODUCTS = [
   {
     id: 'roses-white',
     name: 'ורדים לבנים',
-    flowers: 'ורדי גן לבנים ושנהב, אקליפטוס וירק',
-    desc: 'ורדי גן לבנים ומלאים עם אקליפטוס, עטופים בנייר שנהב. נקי, אלגנטי ומתאים כמעט לכל רגע.',
+    flowers: 'ורדי גן לבנים ושנהב, ציפורנים לבנות ואקליפטוס',
+    desc: 'ורדי גן לבנים ומלאים עם כמה ציפורנים לבנות ואקליפטוס, עטופים בנייר שנהב. נקי, אלגנטי ומתאים כמעט לכל רגע.',
     img: 'assets/img/roses-white.jpg',
     occasions: ['love', 'thanks', 'wedding', 'shabbat'], colors: ['white'],
     prices: [230, 290, 370]
@@ -123,9 +123,36 @@ window.PRODUCTS = [
     prices: [220, 280, 350]
   },
   {
+    id: 'anemones',
+    name: 'כלניות אדומות',
+    flowers: 'כלניות אדומות, אקליפטוס וירק',
+    desc: 'כלניות אדומות עם לב שחור, הפרח של החורף בארץ, עם אקליפטוס וירק עדין, עטופות בנייר שנהב.',
+    img: 'assets/img/anemones.jpg',
+    occasions: ['love', 'thanks', 'birthday'], colors: ['red'],
+    prices: [190, 240, 310]
+  },
+  {
+    id: 'gerberas',
+    name: 'גרברות שמחות',
+    flowers: 'גרברות בכתום, בצהוב, בוורוד עז ובאלמוג, וירק',
+    desc: 'זר עגול ומלא גרברות בצבעים חמים ושמחים, עם ענפי ירק. מתאים במיוחד ליום הולדת או להחלמה.',
+    img: 'assets/img/gerberas.jpg',
+    occasions: ['birthday', 'thanks'], colors: ['warm'],
+    prices: [170, 220, 290]
+  },
+  {
+    id: 'lisianthus',
+    name: 'ליזיאנטוס בסגול ולבן',
+    flowers: 'ליזיאנטוס בסגול, בלילך ובלבן, וירק',
+    desc: 'זר שופע של ליזיאנטוס בשלושה גוונים, סגול עמוק, לילך ולבן, עם ניצנים וירק. עדין ומרשים יחד.',
+    img: 'assets/img/lisianthus.jpg',
+    occasions: ['love', 'thanks', 'shabbat'], colors: ['pastel', 'white'],
+    prices: [200, 260, 330]
+  },
+  {
     id: 'morning', featured: true,
     name: 'שמש של בוקר',
-    flowers: 'נוריות כתומות, צבעונים צהובים וורדי אלמוג',
+    flowers: 'נוריות כתומות, צבעונים צהובים, ורדים בכתום ובאפרסק וזהבית',
     desc: 'זר שמח בגוונים חמים, בדיוק בשביל יום הולדת או בוקר שצריך קצת צבע.',
     img: 'assets/img/card4.jpg',
     occasions: ['birthday', 'thanks'], colors: ['warm'],
@@ -143,8 +170,8 @@ window.PRODUCTS = [
   {
     id: 'harvest', featured: true,
     name: 'בציר',
-    flowers: 'דליות בורדו, ורדים כהים ועלי גפן',
-    desc: 'זר בגווני יין עמוקים, עם עלי גפן. כמו זכרון יעקב בסוף הקיץ.',
+    flowers: 'דליות בורדו, ורדים כהים, סקביוזה ועלווה בגוון יין',
+    desc: 'זר בגווני יין עמוקים, עם עלווה כהה בגוון בורדו. כמו זכרון יעקב בעונת הבציר.',
     img: 'assets/img/card6.jpg',
     occasions: ['love', 'birthday'], colors: ['red'],
     prices: [240, 300, 370]
@@ -152,7 +179,7 @@ window.PRODUCTS = [
   {
     id: 'welcome', featured: true,
     name: 'ברוכים הבאים',
-    flowers: 'אפונה ריחנית, נוריות ורודות ושעוונית',
+    flowers: 'נוריות ורודות ולבנות, אפונה ריחנית, שעוונית ועלי כסף',
     desc: 'זר עדין בוורוד ובלבן, לברך את ההורים הטריים ואת מי שרק הגיע לעולם.',
     img: 'assets/img/card8.jpg',
     occasions: ['baby'], colors: ['pastel'],
@@ -162,7 +189,7 @@ window.PRODUCTS = [
     id: 'orchid', featured: true,
     name: 'סחלב לבן',
     flowers: 'סחלב פלנופסיס בעציץ קרמיקה',
-    desc: 'סחלב לבן עם שני ענפי פריחה בעציץ קרמיקה לבן. מחזיק שבועות ארוכים בבית או במשרד.',
+    desc: 'סחלב לבן עם ענף פריחה מתפצל, בעציץ קרמיקה לבן. מחזיק שבועות ארוכים בבית או במשרד.',
     img: 'assets/img/orchid.jpg',
     occasions: ['plants', 'thanks'], colors: ['white'],
     prices: [190, 250, 320], sizeLabels: ['עציץ אחד', 'שני עציצים', 'שלושה עציצים']
@@ -170,7 +197,7 @@ window.PRODUCTS = [
   {
     id: 'colorful', featured: true,
     name: 'פינוק צבעוני',
-    flowers: 'ורדים בוורוד ובאלמוג, ליזיאנטוס סגול ונוריות צהובות',
+    flowers: 'ורדים בוורוד עז, בכתום ובצהוב, דלפיניום כחול ולוע ארי ירוק',
     desc: 'זר עליז בהרבה צבעים, למי שאוהב שמח. מתאים ליום הולדת, להחלמה או סתם כי בא לכם.',
     img: 'assets/img/colorful.jpg',
     occasions: ['birthday', 'thanks'], colors: ['warm'],
@@ -178,10 +205,10 @@ window.PRODUCTS = [
   },
   {
     id: 'peony', pick: 1,
-    note: 'אדמוניות שנפתחות לאט, והזר משתנה ומתמלא מיום ליום.',
+    note: 'אדמוניות שמגיעות בניצן ונפתחות בבית, והזר מתמלא מיום ליום.',
     name: 'אדמוניות ורודות',
-    flowers: 'אדמוניות בוורוד רך ועלווה ירוקה',
-    desc: 'אדמוניות שופעות בוורוד רך, בעונתן. זר שנפתח לאט ומתמלא מיום ליום.',
+    flowers: 'אדמוניות ורודות בניצנים ועלווה ירוקה',
+    desc: 'צרור אדמוניות ורודות שמגיעות בניצן ונפתחות בבית לאט, ומתמלאות מיום ליום.',
     img: 'assets/img/peony.jpg',
     occasions: ['love', 'birthday', 'thanks'], colors: ['pastel'],
     prices: [260, 330, 420]
@@ -189,8 +216,8 @@ window.PRODUCTS = [
   {
     id: 'boy',
     name: 'להולדת הבן',
-    flowers: 'דלפיניום כחול, ורדים לבנים וגיפסנית',
-    desc: 'זר בכחול ובלבן לברכת ההורים על הולדת הבן, עם דלפיניום, ורדים לבנים וגיפסנית.',
+    flowers: 'דלפיניום כחול, ורדים לבנים, שעוונית לבנה ואקליפטוס',
+    desc: 'זר בכחול ובלבן לברכת ההורים על הולדת הבן, עם דלפיניום, ורדים לבנים וסרט תכלת.',
     img: 'assets/img/boy.jpg',
     occasions: ['baby'], colors: ['white'],
     prices: [180, 230, 290]
@@ -198,8 +225,8 @@ window.PRODUCTS = [
   {
     id: 'bride',
     name: 'כלה בלבן',
-    flowers: 'ורדי גן, אדמוניות ויסמין מטפס',
-    desc: 'זר כלה אוורירי בלבן ובשנהב, שגבעוליו עטופים בסרט משי. מומלץ לתאם מראש עם השוזר.',
+    flowers: 'ורדים לבנים, מתיולה לבנה, פריחה לבנה בפעמונים וירק כסוף',
+    desc: 'זר כלה גבוה ואוורירי בלבן ובירוק כסוף, שגבעוליו עטופים בסרט משי. מומלץ לתאם מראש עם השוזר.',
     img: 'assets/img/card3.jpg',
     occasions: ['wedding'], colors: ['white'],
     prices: [380, 480, 600]
@@ -208,7 +235,7 @@ window.PRODUCTS = [
     id: 'engagement', pick: 4,
     note: 'ורוד עתיק ורך, לרגעים שרוצים לזכור.',
     name: 'ורוד של אירוסין',
-    flowers: 'ורדים בגוון ורוד עתיק, אדמוניות וליזיאנטוס',
+    flowers: 'ורדי גן בוורוד עתיק ובסלמון, לימוניום כסוף ופרחים לבנים קטנים',
     desc: 'זר רומנטי בגווני ורוד עתיק, להצעת נישואין, לאירוסין או לערב שכדאי לזכור.',
     img: 'assets/img/engagement.jpg',
     occasions: ['wedding', 'love'], colors: ['pastel'],
@@ -227,8 +254,8 @@ window.PRODUCTS = [
   {
     id: 'harmony',
     name: 'הרמוניה בסגול',
-    flowers: 'ליזיאנטוס סגול, ורדים ורודים וחרציות לבנות',
-    desc: 'שילוב של סגול, ורוד ולבן בזר מלא ומאוזן.',
+    flowers: 'פרוטאה ורודה, יקינטון סגול, דלפיניום כחול, ורד ורוד וכדורי ירק',
+    desc: 'זר מלא בסגול, בכחול ובוורוד, עם פרוטאה במרכז, בקנקן קרמיקה לבן.',
     img: 'assets/img/harmony.jpg',
     occasions: ['birthday', 'thanks'], colors: ['pastel'],
     prices: [180, 230, 290]
@@ -245,10 +272,10 @@ window.PRODUCTS = [
   },
   {
     id: 'sunflower', pick: 5,
-    note: 'חמניות גדולות עם ענפי זית, זר שמכניס שמש לכל חדר.',
+    note: 'חמניות גדולות עם אקליפטוס, זר שמכניס שמש לכל חדר.',
     name: 'חמניות',
-    flowers: 'חמניות, אקליפטוס וענפי זית',
-    desc: 'חמניות גדולות עם אקליפטוס וענפי זית. זר שמחייך מכל פינה בחדר.',
+    flowers: 'חמניות, אקליפטוס וגיפסנית',
+    desc: 'חמניות גדולות עם אקליפטוס וגיפסנית, עטופות בנייר שנהב. זר שמחייך מכל פינה בחדר.',
     img: 'assets/img/sunflower.jpg',
     occasions: ['birthday', 'thanks'], colors: ['warm'],
     prices: [160, 200, 250]
@@ -265,7 +292,7 @@ window.PRODUCTS = [
   {
     id: 'condolence', featured: true, quiet: true,
     name: 'סידור תנחומים לבן',
-    flowers: 'שושנים, ורדים וחרציות לבנים',
+    flowers: 'ליליום לבן, ורדים לבנים, חרציות לבנות וירוקות ואקליפטוס',
     desc: 'סידור נמוך ושקט בלבן ובירוק כסוף, לבית האבלים. אפשר לצרף כרטיס בכתב יד.',
     img: 'assets/img/card9.jpg',
     occasions: ['condolence'], colors: ['white'],
