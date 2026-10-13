@@ -342,11 +342,18 @@
     || (w.length > 3 && /^[והבלמש]/.test(w) && ` ${hay}`.includes(` ${w.slice(1)}`));
   const STOP = new Set(['עד', 'של', 'עם', 'או', 'זר', 'זרי', 'זרים', 'פרחים', 'פרחי', 'ל', 'ב']);
 
+  // Flowers people call by more than one name or spell several ways.
+  const synonym = (w) => w
+    .replace(/^(אדמונ|פיונ)\S*/, 'פיונ')
+    .replace(/^(לילי|שושנ(ת|י)? צחור)\S*/, 'לילי')
+    .replace(/^ליז\S*/, 'ליז');
+
   function searchProducts(query) {
     const raw = norm(query).split(/\s+/).filter(Boolean);
     const max = (/עד\s*₪?\s*(\d+)/.exec(query) || [])[1];
     const words = raw.filter((w) => !STOP.has(w) && !/^\d+$/.test(w) && w !== '₪')
-      .map((w) => (w.length >= 5 && /(ימ|ות)$/.test(w) ? w.slice(0, -2) : w));
+      .map((w) => (w.length >= 5 && /(ימ|ות)$/.test(w) ? w.slice(0, -2) : w))
+      .map(synonym);
     if (!words.length && !max) return [];
     const found = PRODUCTS.filter((p) => {
       if (max && p.prices[0] > Number(max)) return false;
