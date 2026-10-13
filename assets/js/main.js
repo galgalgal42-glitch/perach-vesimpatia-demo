@@ -689,6 +689,7 @@
     const count = $('[data-search-count]');
     const all = $('[data-search-all]');
     $('[data-search-suggest]').hidden = !!q;
+    $('[data-search-clear]').hidden = !searchInput.value;
     if (!q) { list.innerHTML = ''; count.textContent = ''; all.hidden = true; return; }
     if (!results.length) {
       list.innerHTML = '';
@@ -730,6 +731,7 @@
       if (e.target.closest('[data-close-search-link]')) closeSearch(true);
       const term = e.target.closest('[data-search-term]');
       if (term) { searchInput.value = term.dataset.searchTerm; runSearch(); searchInput.focus(); }
+      if (e.target.closest('[data-search-clear]')) { searchInput.value = ''; runSearch(); searchInput.focus(); }
     });
     searchInput.addEventListener('input', runSearch);
     $('[data-search-form]').addEventListener('submit', (e) => {
