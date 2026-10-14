@@ -117,7 +117,25 @@
       const short = list.hasAttribute('data-towns-short');
       const shown = short ? SHOP.towns.slice(0, 7) : SHOP.towns;
       list.innerHTML = shown.map((t) => `<li>${t}</li>`).join('')
-        + (short ? `<li><a href="index.html#shop">ועוד ${SHOP.towns.length - shown.length} יישובים</a></li>` : '');
+        + (short ? `<li><a href="#delivery" data-all-towns>ועוד ${SHOP.towns.length - shown.length} יישובים</a></li>` : '');
+    });
+    // Footer: the first towns, then a button that opens the full list in place.
+    $$('[data-towns-footer]').forEach((list) => {
+      const FIRST = 10;
+      list.innerHTML = SHOP.towns.map((t, i) => `<li${i >= FIRST ? ' class="towns__more" hidden' : ''}>${t}</li>`).join('');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'towns__toggle';
+      btn.setAttribute('aria-expanded', 'false');
+      const label = (open) => (open ? 'פחות יישובים' : `לכל ${SHOP.towns.length} היישובים`);
+      btn.innerHTML = `<span>${label(false)}</span><svg class="icon icon--sm" aria-hidden="true"><use href="#i-caret-down"/></svg>`;
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(open));
+        btn.firstElementChild.textContent = label(open);
+        $$('.towns__more', list).forEach((li) => { li.hidden = !open; });
+      });
+      list.after(btn);
     });
     $$('[data-town-picker]').forEach((el) => townPicker(el));
   }
@@ -1294,8 +1312,39 @@
         if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
       });
     }, { rootMargin: '0px 0px -4% 0px' });
-    $$('.section-head, .pick-lead, .picks-row, .personal__media, .personal__body, .occasion-list, .about__media, .about__body, .reviews, .gift-row, .shop__main, .shop__delivery, .faq__inner')
+    $$('.section-head, .pick-lead, .picks-row, .personal__media, .personal__body, .occasion-list, .about__media, .about__body, .reviews, .gift-row, .faq__inner')
       .forEach((el) => { el.setAttribute('data-reveal', ''); io.observe(el); });
+  }
+
+  /* ---------- Footer: columns on wide screens, accordions on phones ---------- */
+
+  function wireFooter() {
+    const cols = $$('[data-fcol]');
+    if (!cols.length) return;
+    const wide = window.matchMedia('(min-width: 900px)');
+    const sync = () => cols.forEach((d) => { d.open = wide.matches; });
+    sync();
+    wide.addEventListener('change', sync);
+    // On wide screens the columns stay open; the headings are titles, not toggles.
+    cols.forEach((d) => d.querySelector('summary').addEventListener('click', (e) => {
+      if (wide.matches) e.preventDefault();
+    }));
+    // Links to the shop or delivery details open those sections first.
+    const reveal = (hash, all) => {
+      const target = hash === '#delivery' ? $('#delivery') : hash === '#shop' ? cols[0] : null;
+      if (!target) return;
+      target.open = true;
+      if (hash === '#shop' && cols[1]) cols[1].open = true;
+      if (all) {
+        const t = $('.towns__toggle');
+        if (t && t.getAttribute('aria-expanded') !== 'true') t.click();
+      }
+    };
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href="#shop"], a[href="#delivery"]');
+      if (a) reveal(a.getAttribute('href'), a.hasAttribute('data-all-towns'));
+    });
+    reveal(location.hash, false);
   }
 
   /* ---------- Boot ---------- */
@@ -1303,6 +1352,7 @@
   renderStatus();
   setInterval(renderStatus, 60 * 1000);
   fillSelects();
+  wireFooter();
   wireWhatsAppLinks();
   occasionLinks();
   renderGrid();

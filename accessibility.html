@@ -16,7 +16,7 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/assistant-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/varela-hebrew.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/css/styles.css?v=202610131320">
+  <link rel="stylesheet" href="assets/css/styles.css?v=202610140820">
 </head>
 <body data-page="accessibility">
 <script>try{if(localStorage.getItem('pv-promo-closed'))document.documentElement.classList.add('promo-closed')}catch(e){}</script>
@@ -177,7 +177,7 @@
                   <div><dt>שישי</dt><dd>08:00 עד 16:00</dd></div>
                   <div><dt>שבת</dt><dd>סגור</dd></div>
                 </dl>
-                <a class="mega__all" href="index.html#shop">כל הפרטים <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg></a>
+                <a class="mega__all" href="#shop">כל הפרטים <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg></a>
               </div>
               <div class="mega__col">
                 <p class="mega__title">משלוחים ל:</p>
@@ -255,24 +255,56 @@
   </div>
 </main>
 
-<footer class="site-footer">
+<footer class="site-footer" id="shop" aria-labelledby="shop-title">
   <div class="container site-footer__inner">
     <div class="site-footer__brand">
       <a class="wordmark wordmark--footer" href="index.html"><span>פרח וסימפטיה</span><svg class="wordmark__mark" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="10 6 28 40"><path fill="#566346" d="M13 12.5c3.3 2.4 7.4 2.6 10.2-2.8.4-.8 1.2-.8 1.6 0 2.8 5.4 6.9 5.2 10.2 2.8 0 10.6-4.8 17.6-11 17.6S13 23.1 13 12.5Z"/><path fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" d="M19.2 14.6c.3 6.2 2 10.6 4.8 13.4M28.8 14.6c-.3 6.2-2 10.6-4.8 13.4"/><path fill="none" stroke="#566346" stroke-width="2" stroke-linecap="round" d="M24 29.8V44"/><path fill="#8c9a78" d="M24.4 40.4c.2-5.1 4.2-8.4 11-8.2-.3 5.3-4.4 8.5-11 8.2Z"/><path fill="#8c9a78" d="M23.6 37.4c-.2-4.1-3.4-6.8-8.9-6.6.2 4.4 3.6 6.8 8.9 6.6Z"/></svg></a>
-      <p>חנות פרחים ברחוב החלוצים 4, זכרון יעקב.<br>משלוחים בזכרון יעקב וביישובי הסביבה.</p>
+      <p>חנות פרחים ברחוב החלוצים 4, זכרון יעקב.<br>זרים טריים, משלוחים בזכרון יעקב וביישובי הסביבה.</p>
+      <div class="site-footer__actions">
+        <a class="btn btn--primary" href="#" data-wa-link><svg class="icon" aria-hidden="true"><use href="#i-whatsapp-logo"/></svg> וואטסאפ</a>
+        <a class="btn btn--ghost" href="tel:+972507453315"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg> <span dir="ltr">050-745-3315</span></a>
+      </div>
+      <a class="site-footer__social" href="https://www.facebook.com/flowerofsympathy" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-facebook-logo"/></svg> פייסבוק</a>
     </div>
-    <nav class="site-footer__nav" aria-label="ניווט תחתון">
-      <a href="catalog.html">הקטלוג</a>
-      <a href="index.html#personal">זר אישי</a>
-      <a href="index.html#about">אודות</a>
-      <a href="index.html#faq">שאלות נפוצות</a>
-      <a href="index.html#shop">שעות פתיחה ומשלוחים</a>
-    </nav>
-    <div class="site-footer__contact">
-      <a href="#" data-wa-link><svg class="icon" aria-hidden="true"><use href="#i-whatsapp-logo"/></svg> וואטסאפ</a>
-      <a href="tel:+972507453315"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg> <span dir="ltr">050-745-3315</span></a>
-      <a href="https://www.facebook.com/flowerofsympathy" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-facebook-logo"/></svg> פייסבוק</a>
-    </div>
+
+    <details class="fcol" data-fcol>
+      <summary><h2 class="fcol__title" id="shop-title">החנות בזכרון יעקב</h2><svg class="icon icon--sm site-footer__chev" aria-hidden="true"><use href="#i-caret-down"/></svg></summary>
+      <div class="fcol__body">
+        <p class="fcol__address"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-map-pin"/></svg> רחוב החלוצים 4, זכרון יעקב</p>
+        <p class="fcol__status" data-open-status-long></p>
+        <table class="hours hours--compact">
+          <caption class="visually-hidden">שעות פתיחה</caption>
+          <tbody data-hours></tbody>
+        </table>
+        <p class="fcol__links">
+          <a href="https://waze.com/ul?q=%D7%94%D7%97%D7%9C%D7%95%D7%A6%D7%99%D7%9D%204%20%D7%96%D7%9B%D7%A8%D7%95%D7%9F%20%D7%99%D7%A2%D7%A7%D7%91&navigate=yes" target="_blank" rel="noopener"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-navigation-arrow"/></svg> ניווט בוויז</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=%D7%94%D7%97%D7%9C%D7%95%D7%A6%D7%99%D7%9D%204%20%D7%96%D7%9B%D7%A8%D7%95%D7%9F%20%D7%99%D7%A2%D7%A7%D7%91" target="_blank" rel="noopener"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-map-pin"/></svg> גוגל מפות</a>
+        </p>
+      </div>
+    </details>
+
+    <details class="fcol" data-fcol id="delivery">
+      <summary><h2 class="fcol__title">משלוחים</h2><svg class="icon icon--sm site-footer__chev" aria-hidden="true"><use href="#i-caret-down"/></svg></summary>
+      <div class="fcol__body">
+        <p>משלוח עד הבית, לעבודה או לאירוע, ליישובים:</p>
+        <ul class="towns towns--footer" data-towns data-towns-footer></ul>
+        <p class="fcol__muted">ליישוב אחר אפשר לבחור אותו בהזמנה, והמשלוח בכפוף לאישור החנות. דמי המשלוח ושעת ההגעה נקבעים בהזמנה.</p>
+      </div>
+    </details>
+
+    <details class="fcol" data-fcol>
+      <summary><h2 class="fcol__title">ניווט באתר</h2><svg class="icon icon--sm site-footer__chev" aria-hidden="true"><use href="#i-caret-down"/></svg></summary>
+      <nav class="fcol__body fcol__nav" aria-label="ניווט תחתון">
+        <a href="catalog.html">הקטלוג</a>
+        <a href="index.html#picks">המומלצים שלנו</a>
+        <a href="index.html#occasions">לפי אירוע</a>
+        <a href="index.html#personal">זר אישי</a>
+        <a href="index.html#gifts">מוסיפים לזר</a>
+        <a href="index.html#about">אודות</a>
+        <a href="index.html#faq">שאלות נפוצות</a>
+      </nav>
+    </details>
+
     <div class="site-footer__fine">
       <p>אתר הדגמה. שמות הזרים, המחירים והתמונות להמחשה בלבד, ואין באתר תשלום.</p>
       <a href="accessibility.html"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-wheelchair"/></svg> הצהרת נגישות</a>
@@ -345,7 +377,7 @@
             <p><svg class="icon icon--sm" aria-hidden="true"><use href="#i-clock"/></svg> <span>ראשון עד חמישי 08:00 עד 20:00<br>שישי 08:00 עד 16:00, שבת סגור</span></p>
           </div>
           <ul>
-            <li><a href="index.html#shop" data-close-drawer>שעות פתיחה ומשלוחים</a></li>
+            <li><a href="#shop" data-close-drawer>שעות פתיחה ומשלוחים</a></li>
             <li><a href="https://waze.com/ul?q=%D7%94%D7%97%D7%9C%D7%95%D7%A6%D7%99%D7%9D%204%20%D7%96%D7%9B%D7%A8%D7%95%D7%9F%20%D7%99%D7%A2%D7%A7%D7%91&navigate=yes" target="_blank" rel="noopener">ניווט בוויז</a></li>
           </ul>
         </div>
@@ -438,8 +470,8 @@
     </div>
   </div>
 </div>
-<script src="assets/js/data.js?v=202610131320"></script>
-<script src="assets/js/towns-il.js?v=202610131320"></script>
-<script src="assets/js/main.js?v=202610131320"></script>
+<script src="assets/js/data.js?v=202610140820"></script>
+<script src="assets/js/towns-il.js?v=202610140820"></script>
+<script src="assets/js/main.js?v=202610140820"></script>
 </body>
 </html>
