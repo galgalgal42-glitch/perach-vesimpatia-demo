@@ -836,7 +836,7 @@
       closed = true;
       drawer.classList.remove('is-open');
       $$(`[aria-controls="${drawer.id}"]`).forEach((b) => b.setAttribute('aria-expanded', 'false'));
-      setTimeout(() => { drawer.hidden = true; }, 320);
+      setTimeout(() => { if (!drawer.classList.contains('is-open')) drawer.hidden = true; }, 320);
     });
     if (!closed) return;
     document.body.classList.remove('is-locked');
@@ -894,7 +894,6 @@
     const parts = [`${p.name}, ${item.size} (${price(item.price)})${item.qty > 1 ? `, כמות: ${item.qty}` : ''}`];
     const extras = addonsFor(item.addons);
     if (extras.length) parts.push(`תוספות: ${extras.map((a) => `${a.name} (${price(a.price)})`).join(', ')}`);
-    if (item.note) parts.push(`ברכה לכרטיס: "${item.note}"`);
     return parts.join('\n   ');
   }
 
@@ -903,9 +902,19 @@
     return off ? `קוד קופון: ${COUPON.code} (${COUPON.percent}% בהזמנה ראשונה מהאתר), הנחה של ${price(off)}.` : '';
   };
 
-  // Delivery details are asked once, at checkout in the bag, not for every bouquet.
-  const checkout = store.get('pv-checkout', { when: '', kind: '', town: '' });
+  // Delivery details and the greeting card are asked once, at checkout in the bag, not for every bouquet.
+  const checkout = Object.assign({ when: '', kind: '', town: '', greet: '', note: '' }, store.get('pv-checkout', {}));
   const saveCheckout = () => store.set('pv-checkout', checkout);
+  const NOTE_MAX = 160;
+
+  // Bags saved before the greeting moved to checkout kept a note on each bouquet: keep the first as the order's card.
+  if (bag.some((i) => 'note' in i)) {
+    const old = bag.map((i) => i.note).find(Boolean);
+    if (old && !checkout.note) { checkout.note = old; checkout.greet = 'yes'; saveCheckout(); }
+    bag.forEach((i) => { delete i.note; });
+    store.set('pv-bag', bag);
+  }
+  const cardNote = () => (checkout.greet === 'yes' ? checkout.note.trim() : '');
 
   function bagMessage(where) {
     const subtotal = bag.reduce((s, i) => s + unitPrice(i) * i.qty, 0);
@@ -914,6 +923,7 @@
       'שלום, אשמח להזמין מהאתר:',
       ...bag.map((i, n) => `${n + 1}. ${itemLine(i)}`),
       couponLine(subtotal),
+      cardNote() ? `ברכה לכרטיס: "${cardNote()}"` : '',
       `סה"כ לפי האתר: ${price(subtotal - off)}${off ? ' אחרי ההנחה' : ''}, לפני משלוח.`,
       checkout.when ? (checkout.when.startsWith('מועד') ? checkout.when : `מועד: ${checkout.when}`) : '',
       where || '',
@@ -965,7 +975,9 @@
               <p class="bag-item__name">${esc(p.name)}</p>
               <p class="bag-item__meta">${esc(item.size)}</p>
               ${extras.length ? `<p class="bag-item__meta">+ ${extras.map((a) => a.name).join(', ')}</p>` : ''}
-              ${item.note ? `<p class="bag-item__note">"${esc(item.note)}"</p>` : ''}
+              <button class="bag-item__edit" type="button" data-edit="${idx}" aria-label="עריכת ${esc(p.name)}: גודל, תוספות או החלפת זר">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-pencil-simple"/></svg> עריכה
+              </button>
               <div class="bag-item__row">
                 <div class="stepper" role="group" aria-label="כמות של ${esc(p.name)}">
                   <button type="button" aria-label="הוספת יחידה" data-qty="${idx}" data-delta="1"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-plus"/></svg></button>
@@ -997,6 +1009,19 @@
             <p class="checkout__error" data-bag-where-error role="alert" hidden>בחרו לאן לשלוח, או איסוף עצמי מהחנות.</p>
           </div>
         </fieldset>
+        <fieldset class="checkout greeting">
+          <legend class="checkout__title">להוסיף ברכה לכרטיס?</legend>
+          <div class="chip-set">
+            <label class="chip"><input type="radio" name="bag-greet" value="yes" data-greet${checkout.greet === 'yes' ? ' checked' : ''}><span>כן, להוסיף ברכה</span></label>
+            <label class="chip"><input type="radio" name="bag-greet" value="no" data-greet${checkout.greet === 'no' ? ' checked' : ''}><span>בלי ברכה</span></label>
+          </div>
+          <div class="field" data-greet-field${checkout.greet === 'yes' ? '' : ' hidden'}>
+            <label for="bag-note">מה לכתוב על הכרטיס?</label>
+            <textarea id="bag-note" rows="3" maxlength="${NOTE_MAX}" placeholder="למשל: מזל טוב, אוהבים אותך" data-bag-note>${esc(checkout.note)}</textarea>
+            <p class="field__help"><span data-bag-note-count>${checkout.note.length}</span>/${NOTE_MAX}${bag.length > 1 || bag[0].qty > 1 ? '. כרטיס אחד לכל ההזמנה.' : ''}</p>
+          </div>
+          <p class="checkout__error" data-greet-error role="alert" hidden></p>
+        </fieldset>
         <p class="bag__fine">לפני דמי משלוח. אין תשלום באתר: ההזמנה נשלחת אלינו בוואטסאפ, ואנחנו חוזרים אליכם לאישור ולתיאום התשלום.</p>
         <button class="btn btn--primary btn--block" type="button" data-bag-send>
           <svg class="icon" aria-hidden="true"><use href="#i-whatsapp-logo"/></svg>
@@ -1018,6 +1043,20 @@
         saveCheckout();
         $('[data-bag-where-error]').hidden = true;
       }
+      if (e.target.matches('[data-greet]')) {
+        checkout.greet = e.target.value;
+        saveCheckout();
+        $('[data-greet-error]').hidden = true;
+        $('[data-greet-field]').hidden = checkout.greet !== 'yes';
+        if (checkout.greet === 'yes') $('[data-bag-note]').focus();
+      }
+    });
+    $('[data-bag]').addEventListener('input', (e) => {
+      if (!e.target.matches('[data-bag-note]')) return;
+      checkout.note = e.target.value;
+      saveCheckout();
+      $('[data-bag-note-count]').textContent = e.target.value.length;
+      if (e.target.value.trim()) $('[data-greet-error]').hidden = true;
     });
     $('[data-bag]').addEventListener('click', (e) => {
       if (!e.target.closest('[data-bag-send]')) return;
@@ -1025,6 +1064,13 @@
       if (!picker.value) {
         $('[data-bag-where-error]').hidden = false;
         picker.invalid();
+        return;
+      }
+      const greetError = $('[data-greet-error]');
+      if (!checkout.greet || (checkout.greet === 'yes' && !cardNote())) {
+        greetError.textContent = checkout.greet ? 'כתבו את הברכה, או בחרו "בלי ברכה".' : 'ספרו לנו אם להוסיף ברכה לכרטיס.';
+        greetError.hidden = false;
+        (checkout.greet ? $('[data-bag-note]') : $('[data-greet]')).focus();
         return;
       }
       window.open(waUrl(bagMessage(picker.value)), '_blank', 'noopener');
@@ -1038,6 +1084,8 @@
     });
     $('[data-bag]').addEventListener('click', (e) => {
       if (e.target.closest('[data-coupon-remove]')) { applyCoupon(''); renderBag(); return; }
+      const edit = e.target.closest('[data-edit]');
+      if (edit) { editBagItem(Number(edit.dataset.edit)); return; }
       const q = e.target.closest('[data-qty]');
       const r = e.target.closest('[data-remove]');
       if (q) {
@@ -1063,6 +1111,7 @@
   const qv = $('[data-quickview]');
   let qvProduct = null;
   let qvTrigger = null;
+  let qvEdit = -1; // index of the bag item being edited, or -1 when adding a new bouquet
 
   function qvItem() {
     const form = $('[data-qv-form]', qv);
@@ -1072,10 +1121,11 @@
       size: sizeLabel(qvProduct, sizeIdx),
       price: qvProduct.prices[sizeIdx],
       addons: $$('input[name="addon"]:checked', form).map((i) => i.value),
-      note: form.note.value.trim(),
       qty: 1
     };
   }
+
+  const itemKey = (i) => [i.id, i.size, (i.addons || []).join()].join('|');
 
   function updateQvTotal() {
     const sum = unitPrice(qvItem());
@@ -1085,36 +1135,80 @@
       : price(sum);
   }
 
-  function openQuickView(id, trigger) {
-    const p = byId(id);
+  // Fills the sheet for one bouquet; sizeIdx and addons carry the choices over when editing or swapping.
+  function fillQuickView(p, sizeIdx = 0, addons = []) {
     qvProduct = p;
-    qvTrigger = trigger;
     const img = $('[data-qv-img]', qv);
     img.src = p.img;
     img.alt = `${p.name}: ${p.flowers}`;
     $('[data-qv-title]', qv).textContent = p.name;
     $('[data-qv-desc]', qv).textContent = p.desc;
+    const pick = Math.min(sizeIdx, p.prices.length - 1);
     $('[data-qv-sizes]', qv).innerHTML = p.prices.map((pr, i) => `
       <label class="size-option">
-        <input type="radio" name="size" value="${i}"${i === 0 ? ' checked' : ''}>
+        <input type="radio" name="size" value="${i}"${i === pick ? ' checked' : ''}>
         <span><strong>${sizeLabel(p, i)}</strong><em>${price(pr)}</em></span>
       </label>`).join('');
     const addonGroup = $('[data-qv-addons-group]', qv);
     addonGroup.hidden = !!p.quiet;
     $('[data-qv-addons]', qv).innerHTML = p.quiet ? '' : ADDONS.map((a) => `
       <label class="addon">
-        <input type="checkbox" name="addon" value="${a.id}">
+        <input type="checkbox" name="addon" value="${a.id}"${addons.includes(a.id) ? ' checked' : ''}>
         <span><img src="${a.img}" alt="" width="600" height="630"><span class="addon__text"><strong>${a.name}</strong><em>+${price(a.price)}</em></span></span>
       </label>`).join('');
-    const form = $('[data-qv-form]', qv);
-    form.note.value = '';
-    $('[data-count-for="qv-note"]').textContent = '0';
     qv.classList.toggle('quickview--quiet', !!p.quiet);
+    $$('[data-swap-id]', qv).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.swapId === p.id)));
     updateQvTotal();
+  }
+
+  function setQvMode(editing) {
+    const swap = $('[data-qv-swap]', qv);
+    swap.hidden = !editing;
+    $('[data-qv-swap-list]', qv).hidden = true;
+    $('[data-qv-swap-toggle]', qv).setAttribute('aria-expanded', 'false');
+    $('[data-qv-wa]', qv).hidden = editing;
+    qv.classList.toggle('quickview--edit', editing);
+    $('[data-qv-add]', qv).innerHTML = editing
+      ? '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg> שמירת השינויים'
+      : '<svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> הוספה לסל';
+  }
+
+  function showQuickView() {
     qv.showModal();
     qv.classList.remove('is-closing');
     qv.scrollTop = 0;
     document.body.classList.add('is-locked');
+  }
+
+  function openQuickView(id, trigger) {
+    qvTrigger = trigger;
+    qvEdit = -1;
+    setQvMode(false);
+    fillQuickView(byId(id));
+    showQuickView();
+  }
+
+  // Editing happens in the same sheet as choosing: size, add-ons, or a different bouquet.
+  function editBagItem(idx) {
+    const item = bag[idx];
+    const p = byId(item.id);
+    if (!p) return;
+    const list = $('[data-qv-swap-list]', qv);
+    if (!list.children.length) {
+      list.innerHTML = PRODUCTS.map((x) => `
+        <button class="qv-swap__item" type="button" data-swap-id="${x.id}" aria-pressed="false">
+          <img src="${x.img}" alt="" width="600" height="630" loading="lazy">
+          <span>${esc(x.name)}</span>
+          <em>מ־${price(x.prices[0])}</em>
+        </button>`).join('');
+    }
+    closeDrawers();
+    qvTrigger = null;
+    qvEdit = idx;
+    setQvMode(true);
+    const sizeIdx = Math.max(0, p.prices.findIndex((_, i) => sizeLabel(p, i) === item.size));
+    fillQuickView(p, sizeIdx, item.addons || []);
+    showQuickView();
   }
 
   function closeQuickView() {
@@ -1127,6 +1221,13 @@
   function wireQuickView() {
     qv.addEventListener('close', () => {
       document.body.classList.remove('is-locked');
+      if (qvEdit >= 0) {
+        // Back to the bag, saved or not.
+        qvEdit = -1;
+        renderBag();
+        openDrawer('bag');
+        return;
+      }
       if (qvTrigger && document.contains(qvTrigger)) qvTrigger.focus({ preventScroll: true });
     });
     qv.addEventListener('cancel', (e) => { e.preventDefault(); closeQuickView(); });
@@ -1134,11 +1235,37 @@
     $('.quickview__close-form', qv).addEventListener('submit', (e) => { e.preventDefault(); closeQuickView(); });
     $('[data-qv-form]', qv).addEventListener('change', updateQvTotal);
 
+    $('[data-qv-swap-toggle]', qv).addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      $('[data-qv-swap-list]', qv).hidden = open;
+    });
+    $('[data-qv-swap-list]', qv).addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-swap-id]');
+      if (!btn) return;
+      const form = $('[data-qv-form]', qv);
+      const sizeIdx = Number(form.querySelector('input[name="size"]:checked').value);
+      const addons = $$('input[name="addon"]:checked', form).map((i) => i.value);
+      fillQuickView(byId(btn.dataset.swapId), sizeIdx, addons);
+      $('[data-qv-swap-list]', qv).hidden = true;
+      $('[data-qv-swap-toggle]', qv).setAttribute('aria-expanded', 'false');
+      qv.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+
     $('[data-qv-form]', qv).addEventListener('submit', (e) => {
       e.preventDefault();
       const item = qvItem();
-      const key = (i) => [i.id, i.size, i.note, (i.addons || []).join()].join('|');
-      const same = bag.find((b) => key(b) === key(item));
+      if (qvEdit >= 0) {
+        item.qty = bag[qvEdit].qty;
+        const same = bag.findIndex((b, i) => i !== qvEdit && itemKey(b) === itemKey(item));
+        if (same >= 0) { bag[same].qty = Math.min(20, bag[same].qty + item.qty); bag.splice(qvEdit, 1); }
+        else bag[qvEdit] = item;
+        saveBag();
+        closeQuickView();
+        return;
+      }
+      const same = bag.find((b) => itemKey(b) === itemKey(item));
       if (same) same.qty += 1; else bag.push(item);
       saveBag();
       closeQuickView();
@@ -1148,7 +1275,7 @@
     $('[data-qv-wa]', qv).addEventListener('click', () => {
       const item = qvItem();
       const extra = couponLine(unitPrice(item));
-      const text = `שלום, אשמח להזמין מהאתר:\n${itemLine(item)}${extra ? `\n${extra}` : ''}\nאת המועד והמשלוח נתאם בשיחה.\nאשמח לאישור ולתיאום התשלום. תודה!`;
+      const text = `שלום, אשמח להזמין מהאתר:\n${itemLine(item)}${extra ? `\n${extra}` : ''}\nאת המועד, המשלוח והברכה לכרטיס (אם תרצו) נתאם בשיחה.\nאשמח לאישור ולתיאום התשלום. תודה!`;
       window.open(waUrl(text), '_blank', 'noopener');
     });
   }

@@ -1793,3 +1793,64 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .mega__towns a { color: var(--sage-ink); font-weight: 600; text-decoration: none; }
 @media (hover: hover) and (pointer: fine) { .mega__towns a:hover { text-decoration: underline; } }
+
+/* ---------- Bag: one greeting card per order, and editing a bouquet from the bag ---------- */
+
+.greeting { margin-block-start: 14px; }
+.greeting .chip span { padding-block: 8px; }
+.bag-item__edit {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  color: var(--sage-ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.bag-item__edit:focus-visible { outline: 2px solid var(--sage-ink); outline-offset: 2px; border-radius: 4px; }
+@media (hover: hover) and (pointer: fine) { .bag-item__edit:hover { text-decoration: underline; } }
+
+.quickview--edit .quickview__actions { grid-template-columns: 1fr; }
+.qv-swap { display: grid; gap: 10px; }
+.qv-swap__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-weight: 600;
+}
+.qv-swap__toggle .icon { transition: transform 200ms ease; }
+.qv-swap__toggle[aria-expanded="true"] .icon { transform: rotate(180deg); }
+.qv-swap__toggle:focus-visible { outline: 2px solid var(--sage-ink); outline-offset: 2px; }
+.qv-swap__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+}
+.qv-swap__item {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-align: start;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+.qv-swap__item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+.qv-swap__item em { font-style: normal; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.qv-swap__item[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.qv-swap__item:focus-visible { outline: 2px solid var(--sage-ink); outline-offset: 2px; }
+@media (min-width: 860px) { .qv-swap__list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
